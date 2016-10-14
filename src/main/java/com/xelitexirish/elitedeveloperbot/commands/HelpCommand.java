@@ -35,7 +35,7 @@ public class HelpCommand implements ICommand {
 
     @Override
     public String help() {
-        String message = "Use '" + Constants.COMMAND_PREFIX + " help <command name>' to view more information about that command!";
+        String message = "Use '" + Constants.COMMAND_PREFIX + "help <command name>' to view more information about that command!";
         return message;
     }
 
@@ -51,7 +51,7 @@ public class HelpCommand implements ICommand {
 
     public static void sendGeneralHelpMessage(MessageReceivedEvent event) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Hey im Elite Developer Bot, my master is XeliteXirish!\n");
+        stringBuilder.append("Hey im Elite Developer Bot, my master is XeliteXirish! Check his website out (www.xelitexirish.com)\n");
         stringBuilder.append("You can use the following commands with this bot: ");
         Iterator entries = Main.commands.entrySet().iterator();
         while (entries.hasNext()) {
@@ -60,6 +60,7 @@ public class HelpCommand implements ICommand {
             stringBuilder.append(command.getTag() + ", ");
         }
         stringBuilder.append("\nThe bot prefix is: " + Constants.COMMAND_PREFIX + "\n");
+        stringBuilder.append("\nThe staff commands can be visible by entering ``" + Constants.DISCORD_COMMAND_PREFIX + " help``\n");
         stringBuilder.append("The current bot version is: " + Constants.CURRENT_VERSION + "\n");
         event.getTextChannel().sendMessage(MessageUtils.wrapStringInCodeBlock(stringBuilder.toString()));
     }

@@ -1,12 +1,14 @@
 package com.xelitexirish.elitedeveloperbot.listeners;
 
 import com.xelitexirish.elitedeveloperbot.Main;
+import com.xelitexirish.elitedeveloperbot.handlers.UsercountListener;
 import com.xelitexirish.elitedeveloperbot.utils.Constants;
-import com.xelitexirish.elitedeveloperbot.utils.BotLogger;
 import com.xelitexirish.elitedeveloperbot.utils.MessageUtils;
 import net.dv8tion.jda.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.events.guild.member.*;
+import net.dv8tion.jda.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.events.user.UserNameUpdateEvent;
 import net.dv8tion.jda.events.voice.VoiceServerDeafEvent;
@@ -33,11 +35,21 @@ public class BotListener extends ListenerAdapter {
         ChatMessageListener.onGuildMemberJoin(event);
 
         SpammerHelper.onUserJoin(event);
+
+        UsercountListener.onUserJoin(event);
+
+        if(Main.enableUsernameChecker){
+            BadUsernameListener.onUserJoin(event);
+        }
     }
 
     @Override
-    public void onUserNameUpdate(UserNameUpdateEvent event) {
+    public void onGuildMemberNickChange(GuildMemberNickChangeEvent event) {
         ChatMessageListener.onUsernameUpdate(event);
+
+        if(Main.enableUsernameChecker){
+            BadUsernameListener.onUsernameChange(event);
+        }
     }
 
     @Override
@@ -47,7 +59,7 @@ public class BotListener extends ListenerAdapter {
 
     @Override
     public void onGuildMemberUnban(GuildMemberUnbanEvent event) {
-       ChatMessageListener.onMemberUnban(event);
+        ChatMessageListener.onMemberUnban(event);
     }
 
     @Override
@@ -73,5 +85,10 @@ public class BotListener extends ListenerAdapter {
     @Override
     public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
         SpammerHelper.onRoleRemoved(event);
+    }
+
+    @Override
+    public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
+        //ChatMessageListener.onGuildMessageDelete(event);
     }
 }

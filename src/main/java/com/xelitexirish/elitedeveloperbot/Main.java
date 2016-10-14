@@ -1,6 +1,9 @@
 package com.xelitexirish.elitedeveloperbot;
 
 import com.xelitexirish.elitedeveloperbot.commands.*;
+import com.xelitexirish.elitedeveloperbot.handlers.ConfigHandler;
+import com.xelitexirish.elitedeveloperbot.handlers.TwitterHandler;
+import com.xelitexirish.elitedeveloperbot.listeners.BadUsernameListener;
 import com.xelitexirish.elitedeveloperbot.listeners.BotListener;
 import com.xelitexirish.elitedeveloperbot.listeners.SpellCheckerListener;
 import com.xelitexirish.elitedeveloperbot.utils.*;
@@ -22,24 +25,36 @@ public class Main {
     public static String DISCORD_TOKEN;
     public static boolean enableAutoMessages = true;
     public static boolean enableSpellChecker = true;
+    public static boolean enableUsernameChecker = true;
+    public static String CONSUMER_KEY;
+    public static String CONSUMER_SECRET;
+    public static String ACCESS_TOKEN;
+    public static String ACCESS_TOKEN_SECRET;
+
+
+    // Unused
     public static boolean enableTimerMessages = true;
 
     // https://discordapp.com/oauth2/authorize?client_id=207593082328186880&scope=bot&permissions=0
 
     /**
-     * 1: Discord Token
-     * 2: Display messages when a user joins/bans/unbans
+     * Pass true to disable the config file and use options from script.
      * @param args
      */
     public static void main(String[] args) {
 
-        if(args.length >= 3){
-            DISCORD_TOKEN = args[0];
-            enableAutoMessages = Boolean.parseBoolean(args[1]);
-            enableAutoMessages = Boolean.parseBoolean(args[2]);
-        }else{
-            System.out.println("Please enter a valid Discord Token!");
+        if(args.length > 0 && Boolean.parseBoolean(args[0])){
+            DISCORD_TOKEN = args[1];
+        }else {
+            ConfigHandler.init();
+        }
+
+        if(DISCORD_TOKEN == null || DISCORD_TOKEN.equals("")){
+            System.out.println("Please enter a valid discord token and try again.");
             return;
+        }
+        if(CONSUMER_KEY == null || CONSUMER_KEY.equals("")){
+            System.out.println("Please enter valid twitter credentials to use this feature.");
         }
 
         BotLogger.initLogger();
@@ -47,7 +62,7 @@ public class Main {
         try {
             jda = new JDABuilder().setBotToken(DISCORD_TOKEN).setAudioEnabled(false).addListener(new BotListener()).buildBlocking();
             jda.setAutoReconnect(true);
-            jda.getAccountManager().setGame("Use '" + Constants.COMMAND_PREFIX + " help' to view the bot information!");
+            jda.getAccountManager().setGame("Use '" + Constants.COMMAND_PREFIX + "help' to view the bot information!");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -55,6 +70,8 @@ public class Main {
         SpellCheckerListener.init();
         registerCommands();
         UserPrivs.setupUsers();
+        TwitterHandler.init(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
+        BadUsernameListener.init();
         //MessageTimer.init();
         //WarningHandler.setup();
     }
@@ -62,7 +79,6 @@ public class Main {
     private static void registerCommands(){
         commands.put("help", new HelpCommand());
         commands.put("admin", new AdminCommand());
-        commands.put("projects", new ProjectsCommands());
         commands.put("userid", new PlayerIdCommand());
         commands.put("correction", new SpellCheckerCommand());
         //commands.put("warn", new WarningCommand());
@@ -79,12 +95,5 @@ public class Main {
                 commands.get(cmd.invoke).executed(safe, cmd.event);
             }
         }
-    }
-
-    public static boolean isTT142Offline(){
-        if(jda.getUserById(Constants.BOT_TT142_ID).getOnlineStatus() != OnlineStatus.ONLINE){
-            return true;
-        }
-        return false;
     }
 }

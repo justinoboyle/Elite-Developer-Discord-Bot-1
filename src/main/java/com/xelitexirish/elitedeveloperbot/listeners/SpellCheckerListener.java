@@ -26,6 +26,8 @@ public class SpellCheckerListener {
 
     public static void init() {
         fillWordLists();
+        blackListUsers.clear();
+        loadBlackListData();
     }
 
     public static void handleMessage(MessageReceivedEvent event) {
@@ -74,9 +76,7 @@ public class SpellCheckerListener {
             String blockMessage = "\n You can blacklist yourself from these messages by entering '" + Constants.COMMAND_PREFIX + "correction false' in chat";
 
             user.getPrivateChannel().sendMessage(message + blockMessage);
-            BotLogger.messageLog("spelling", user.getUsername() + " has said " + baseWord);
         } catch (Exception e) {
-
         }
     }
 
@@ -87,25 +87,30 @@ public class SpellCheckerListener {
         loadBlackListData();
     }
 
-    public static void blockUser(Guild guild, User user) {
+    public static void blockUser(Guild guild, User user, Boolean privateMsg) {
         String userId = user.getId();
 
         blackListUsers.clear();
         loadBlackListData();
 
         if (blackListUsers.contains(userId)) {
-            user.getPrivateChannel().sendMessage("You are already blacklisted to receive spell check messages.  Use '" + Constants.COMMAND_PREFIX + "correction true' tp unblock yourself");
+            user.getPrivateChannel().sendMessage("You are already blacklisted to receive spell check messages.  Use '" + Constants.COMMAND_PREFIX + "correction true' to unblock yourself");
 
         } else {
             blackListUsers.add(userId);
             user.getPrivateChannel().sendMessage("You are now on the bot blacklist. Use '" + Constants.COMMAND_PREFIX + "correction false' to unblock yourself.");
-            guild.getPublicChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
+            if(privateMsg){
+                user.getPrivateChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
+            }else{
+                guild.getPublicChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
+            }
+
         }
 
         writeBlacklist();
     }
 
-    public static void unblockUser(Guild guild, User user) {
+    public static void unblockUser(Guild guild, User user, Boolean privateMsg) {
         String userId = user.getId();
 
         blackListUsers.clear();
@@ -114,8 +119,11 @@ public class SpellCheckerListener {
         if (blackListUsers.contains(userId)) {
             blackListUsers.remove(userId);
             user.getPrivateChannel().sendMessage("You are now removed from the bot blacklist. Use '" + Constants.COMMAND_PREFIX + "correction false' to block yourself.");
-            guild.getPublicChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
-
+            if(privateMsg){
+                user.getPrivateChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
+            }else{
+                guild.getPublicChannel().sendMessage(MessageUtils.wrapStringInCodeBlock("User setting updated"));
+            }
         } else {
             user.getPrivateChannel().sendMessage("You are currently not on the blacklist. Use '" + Constants.COMMAND_PREFIX + "correction false' to block yourself.");
         }
